@@ -1,8 +1,8 @@
 {
   description = "A Nix-flake-based Python development environment";
 
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
-  inputs.nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  # inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
 
   outputs = inputs: let
     supportedSystems = [
@@ -16,7 +16,6 @@
         system:
           f {
             pkgs = import inputs.nixpkgs {inherit system;};
-            inherit system;
           }
       );
 
@@ -34,10 +33,10 @@
     * present. For safety, removal should
     * be a manual step, even if trivial.
     */
-    version = "3.11";
+    version = "3.9";
   in {
     devShells = forEachSupportedSystem (
-      {pkgs, system}: let
+      {pkgs}: let
         concatMajorMinor = v:
           pkgs.lib.pipe v [
             pkgs.lib.versions.splitVersion
@@ -46,7 +45,6 @@
           ];
 
         python = pkgs."python${concatMajorMinor version}";
-        unstablePkgs = import inputs.nixpkgs-unstable {inherit system;};
       in {
         default = pkgs.mkShell {
           venvDir = ".venv";
@@ -70,10 +68,8 @@
           packages = with python.pkgs; [
             venvShellHook
             pip
-            uv
             pkgs.bashInteractive
             pkgs.bash-completion
-            unstablePkgs.uv
             python-lsp-server
 
             # Add whatever else you'd like here.
